@@ -7,6 +7,8 @@ import {
 } from '../services/api.jsx'
 
 import ResultsTable from './ResultsTable.jsx'
+import AnalysisModal from './AnalysisModal.jsx'
+
 
 export default function App() {
 
@@ -17,7 +19,12 @@ export default function App() {
     // Search & retrieval
     const [searchQuery, setSearchQuery] = useState ('')
     const [tagQuery,    setTagQuery]=useState('')
-    
+
+
+    //Analysis states
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [analysisResult, setAnalysisResult] = useState(null);
+      const [isAnalyzing, setIsAnalyzing] = useState(false);
     
     const handleSubmit = async (e) => {
         // Stop the page from refreshing
@@ -86,11 +93,34 @@ export default function App() {
             console.error("Retrieval Error:", err);
         }
     };    
-    const handleAnalyze = async (e) =>{
 
-        console.log("Calling handleAnalyze")
-    }
+    const handleAnalyze = async (note) => {
+        setIsModalOpen(true); // Open immediately
+        setIsAnalyzing(true);
+        setAnalysisResult(null);
+         console.log(`handleAnalyze: ${note.title} (ID: ${note.id})`);
 
+        try {
+            const response = await fetch('http://localhost:8000/analyzeTicket', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(note)
+            });
+
+            if (!response.ok) throw new Error("Backend analysis failed");
+
+            const data = await response.json();
+            console.log(`handleAnalyze received ${data.classification}`)
+            // 2. Update state with the result from your classifier
+            setAnalysisResult(data); 
+        } catch (err) {
+            console.error("Analysis Error:", err);
+            setAnalysisResult("Error: could not reach the classifier.");
+        } finally {
+            // 3. Turn off the spinner
+            setIsAnalyzing(false);
+        }
+    };
 
     // return the page
     return (
@@ -199,12 +229,19 @@ export default function App() {
                                 results={result} 
                                 onAnalyze={handleAnalyze} 
                             />
-
+                        
                             
                         </div>
                     </div>                
                 </div>
             </div>
+
+            <AnalysisModal 
+                isOpen={isModalOpen} 
+                onClose={() => setIsModalOpen(false)} 
+                data={analysisResult} 
+                isLoading={isAnalyzing} 
+                />
         </div> // This is the master container closure
     ) //return
 } //App

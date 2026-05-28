@@ -22,3 +22,9 @@ class NoteInternal(Note):
 class SearchQuery(BaseModel):
     query_text:str = None
     tags:list[str] = []
+
+
+class AnalyzeTicketResponse(BaseModel):
+    classification: dict[str, Any] = {}
+    extracted_info: dict[str, Any] = {}
+    recommendation: dict[str, Any] = {}

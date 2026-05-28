@@ -16,8 +16,11 @@ import csv, pprint
 from modules.handleSamples import populateDBsWithSamples, clearDBsOfSamples
 from modules.relational_db import insertNoteIntoRelDB, retrieveNotesByIds
 from modules.vector_db import upsertNoteToVectorDB, searchVectorDB
-from modules.datamodels import NoteInternal, SearchQuery
+from modules.datamodels import NoteInternal, SearchQuery, AnalyzeTicketResponse
 
+import modules.classifier as classifier
+import modules.extractor as extractor 
+import modules.recommendor as recommendor
 
 
 origins=origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
@@ -57,6 +60,19 @@ def retrieveTickets(searchQuery:SearchQuery)->list[NoteInternal]:
 
     return listOfNotes
 
+@app.post('/analyzeTicket')
+def analyzeTicket(note:NoteInternal):
+    print (f'analyzeTicket: {note=} \n')
+    classification = classifier.classify_ticket(note.content)
+    info = extractor.extract_info(note.content)
+    next_steps = recommendor.recommend_next_steps(classification, info)
+    print (f'{classification=}')    
+    # print (f'{classification=}, \n {info=}, \n {next_steps=}')
+    return AnalyzeTicketResponse(
+        classification=classification,
+        extracted_info=info,
+        recommendation=next_steps
+    )
 
 
 # Unit Testing sandbox
