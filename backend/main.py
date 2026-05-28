@@ -12,8 +12,13 @@ from fastapi.middleware.cors import CORSMiddleware
 import chromadb
 import csv, pprint
 
-from modules.relational_db import insertNoteIntoRelDB
-from modules.datamodels import NoteInternal
+
+from modules.handleSamples import populateDBsWithSamples, clearDBsOfSamples
+from modules.relational_db import insertNoteIntoRelDB, retrieveNotesByIds
+from modules.vector_db import upsertNoteToVectorDB, searchVectorDB
+from modules.datamodels import NoteInternal, SearchQuery
+
+
 
 origins=origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
 
@@ -26,12 +31,40 @@ app.add_middleware(
 	allow_headers=["*"],
 )
 
+@app.post('/populateDBs')
+def populateDBs():
+    print ('populateDBs: inside func')
+    populateDBsWithSamples()
+
+@app.post('/clearDBs')
+def clearDBs():
+    print ('clearDBs: inside func')    
+    clearDBsOfSamples()
+
+
+@app.post('/processTicket')
+def processTicket(note:NoteInternal)->NoteInternal:
+    print(f'processTicket: recived {note}')
+    insertNoteIntoRelDB(note)
+    upsertNoteToVectorDB(note)
+    return note
+
+@app.post('/retrieveTickets')
+def retrieveTickets(searchQuery:SearchQuery)->list[NoteInternal]:
+    print(f'retrieveTickets: received {searchQuery=}')
+    listOfIDs=searchVectorDB(searchQuery)
+    listOfNotes= retrieveNotesByIds(listOfIDs)
+
+    return listOfNotes
+
+
 
 # Unit Testing sandbox
 if __name__ == '__main__':
 
-    mynote = NoteInternal(title='test note 1', content='content 1', tags=['t1', 't11'])
-    insertNoteIntoRelDB(mynote)
+    pass
+    # mynote = NoteInternal(title='test note 1', content='content 1', tags=['t1', 't11'])
+    # insertNoteIntoRelDB(mynote)
 
     # use UI to test other functions. 
 

@@ -6,6 +6,7 @@ The Pydantic models are defined in datamodels.py
 
 import sqlite3
 from typing import List
+import uuid
 
 # learning: if running from main.py, '.' (ie backend ) is added to syspath so 
 # importing this module looks for datamodels within backend/modules. 
@@ -20,10 +21,21 @@ from typing import List
 #     # Works when running 'python relational_db.py' directly for unit testing
 #     import datamodels
 
-from modules.datamodels import NoteInternal
-import json
+try:
+    # Works when running via main.py or 'python -m modules.relational_db'
+    from modules.datamodels import NoteInternal
+except (ImportError, ModuleNotFoundError):
+    # Works when running 'python relational_db.py' directly for unit testing
+    from datamodels import NoteInternal
 
-with sqlite3.connect ('notes_rel.db') as connection:
+
+import json
+from pathlib import Path
+
+MODULE_DIR = Path(__file__).parent
+REL_DB_NAME = MODULE_DIR / 'notes_rel.db'
+
+with sqlite3.connect (REL_DB_NAME) as connection:
     cursor = connection.cursor()
     try: 
         cursor.execute (''' 
@@ -44,7 +56,7 @@ def insertNoteIntoRelDB(noteToInsert: NoteInternal):
     """
     Inserts a single note in the sqlite db
     """
-    conn = sqlite3.connect("notes_rel.db")
+    conn = sqlite3.connect(REL_DB_NAME)
     cursor = conn.cursor()
   
     try :
@@ -65,16 +77,80 @@ def insertNoteIntoRelDB(noteToInsert: NoteInternal):
             tags_str,
             note_dict["created_at"]
         ))
+        print(f'insertNoteIntoRelDB: successfully inserted note: {str(noteToInsert.id)}')
     finally:     
         conn.commit()
     conn.close()
+
+def retrieveNotesByIds(idList:List[str]) -> List[NoteInternal]:
+    '''
+    Function takes in an ordered IDs list (from the semantic search 
+    and retrieves the notes data from the SQLite Database. 
+    
+    It presearves the order of the IDs list
+    '''
+    print(f'retrieveNotesByIds: {idList=} \n')
+    if not idList:
+        return []
+    conn = sqlite3.connect(REL_DB_NAME)
+    conn.row_factory = sqlite3.Row  # Enable name-based access
+    cursor = conn.cursor()
+
+    # Create placeholders for the WHERE IN clause: (?, ?, ?)
+    placeholders = ', '.join(['?'] * len(idList))
+    print(f'retrieveNotesByIds: {placeholders=} \n')
+    # Build the CASE statement to preserve ChromaDB's order
+    # Generates: CASE id WHEN ? THEN 0 WHEN ? THEN 1 ... END
+    # Basically the number after THEN is a simple score that is 
+    #   then use by ORDER BY to preserve the order
+    whenClauses = []
+    for i in range(len(idList)):
+        whenClauses.append(f"WHEN ? THEN {i}")
+    
+    orderByCase = f"CASE id {' '.join(whenClauses)} END"
+    print(f'retrieveNotesByIds: {orderByCase=} \n')
+    
+    # Construct the full SQL query
+    sql = f"""
+        SELECT id, title, tags, created_at, content 
+        FROM notes 
+        WHERE id IN ({placeholders}) 
+        ORDER BY {orderByCase}
+    """
+    print(f'retrieveNotesByIds: {sql=} \n')
+
+    #Combine params: idList for the WHERE clause + idList for the CASE clause
+    params = idList + idList
+    orderedNotes = []
+    print(f'retrieveNotesByIds: {params=} \n')
+
+    try:
+        cursor.execute(sql, params)
+        rows = cursor.fetchall() 
+
+        for row in rows:
+            data = dict(row)
+            data["tags"] = json.loads(data["tags"])
+            note = NoteInternal.model_validate(data)
+            orderedNotes.append(note)
+
+    except Exception as e: 
+        print (f"*** retrieveNotesBatchFromRelDb: Exception while retrieving :{e}")
+    finally:
+        conn.close()
+
+    print(f'retrieveNotesByIds: {orderedNotes=} \n')
+
+    return orderedNotes
+
+
 
 def retrieveNoteFromRelDb(note_id: str):
     """
     Fetches notes from SQLite and returns a NoteInternal object.
     Accepts note_id as a string (how it's stored in SQL).
     """
-    conn = sqlite3.connect("notes.db")
+    conn = sqlite3.connect(REL_DB_NAME)
     conn.row_factory = sqlite3.Row  # Enable name-based access
     cursor = conn.cursor()
 
@@ -89,9 +165,31 @@ def retrieveNoteFromRelDb(note_id: str):
             # Reconstruct the Pydantic object
             return NoteInternal.model_validate(data)
         return None
-    
+    except Exception as e: 
+        print (f"*** retrieveNoteFromRelDb: Exception while retrieving :{e}")
     finally:
         conn.close()
+
+
+def insertNotesBatchIntoRelDB(notes:List[NoteInternal])->List[str]: 
+    """
+    WARNING: Clears the db of previously inserted notes
+    Inserts a batch of notes into SQLite 
+    Primarily used for testing, returns a list of the inserted uuids
+    """
+  
+    if not notes:
+        return []
+
+    idsToReturn:List[str] = []
+
+    for eachNote in notes:
+        idsToReturn.append(eachNote.id)
+        insertNoteIntoRelDB(eachNote)
+    
+
+    return idsToReturn
+
 
 def retrieveNotesBatchFromRelDb(note_ids: List[str]) -> List[NoteInternal]:
     """
@@ -101,7 +199,7 @@ def retrieveNotesBatchFromRelDb(note_ids: List[str]) -> List[NoteInternal]:
     if not note_ids:
         return []
 
-    conn = sqlite3.connect("notes.db")
+    conn = sqlite3.connect(REL_DB_NAME)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
@@ -127,7 +225,8 @@ def retrieveNotesBatchFromRelDb(note_ids: List[str]) -> List[NoteInternal]:
         ordered_notes = [notes_map[nid] for nid in note_ids if nid in notes_map]
         
         return ordered_notes
-
+    except Exception as e: 
+        print (f"*** retrieveNotesBatchFromRelDb: Exception while retrieving :{e}")
     finally:
         conn.close()
 
@@ -136,7 +235,7 @@ def deleteNoteFromRelDB(note_uuid: uuid.UUID):
     """
     Deletes a specific note row using its UUID.
     """
-    conn = sqlite3.connect("notes.db")
+    conn = sqlite3.connect(REL_DB_NAME)
     cursor = conn.cursor()
     
     try:
@@ -151,11 +250,11 @@ def deleteNoteFromRelDB(note_uuid: uuid.UUID):
         conn.close()
 
 
-def clearDB():
+def clearRelDB():
     """
     Removes all rows from the notes table.
     """
-    conn = sqlite3.connect("notes.db")
+    conn = sqlite3.connect(REL_DB_NAME)
     cursor = conn.cursor()
     
     try:
@@ -167,3 +266,4 @@ def clearDB():
         conn.rollback()
     finally:
         conn.close()
+

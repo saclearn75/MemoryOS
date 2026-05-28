@@ -19,3 +19,6 @@ class NoteInternal(Note):
     created_at: datetime = Field(default_factory=datetime.now)    
 
 
+class SearchQuery(BaseModel):
+    query_text:str = None
+    tags:list[str] = []

@@ -9,6 +9,7 @@ import json
 from typing import List
 import uuid
 import chromadb
+from pathlib import Path
 
 try:
     # Works when running via main.py or 'python -m modules.relational_db'
@@ -17,8 +18,8 @@ except (ImportError, ModuleNotFoundError):
     # Works when running 'python relational_db.py' directly for unit testing
     from datamodels import NoteInternal
 
-
-VECTOR_DB_NAME = 'vector_db'
+MODULE_DIR = Path(__file__).parent
+VECTOR_DB_NAME = MODULE_DIR/'vector_db'
 
 try:
     client =chromadb.PersistentClient (VECTOR_DB_NAME)
