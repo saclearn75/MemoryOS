@@ -1,0 +1,30 @@
+Incorrect dosage 1+Patient received double dose of insulin due to duplicate chart entry. Blood glucose monitored. No adverse effects observed.
+Wrong Medication 2+Wrong medication administered during evening round. Nurse identified error immediately and notified physician. Patient stable.
+DelayedMedication 1+Medication delayed by 2 hours due to pharmacy backlog. Patient reported mild discomfort. Dose administered once available.
+Incorrect Dosage 2+Incorrect dosage given due to unclear labeling on vial. Patient monitored for side effects. No complications noted.
+Wrong Medication 3+Allergy alert missed in system. Patient given antibiotic causing mild rash. Treated with antihistamines.
+Wrong Medication 4+PRN pain medication administered without proper documentation. Patient condition stable. Documentation corrected.
+Fall 1+Patient slipped while attempting to get out of bed unassisted. Minor bruising on left arm. Vitals stable.
+Fall 2+Fall reported in bathroom. Patient stated floor was wet. No head injury. Incident reported to supervisor.
+Fall 3+Patient fell during transfer from wheelchair to bed. Staff assisted immediately. No fractures suspected.
+Fall 4+Unwitnessed fall in hallway. Patient found conscious. CT scan ordered as precaution.
+Fall 4+Patient attempted to walk without assistance despite fall risk designation. Fell near bedside. No serious injury.
+Eqpt Malfunction 1+IV pump malfunctioned during infusion. Backup device used. No interruption in treatment.
+Eqpt Malfunction 2+Cardiac monitor displayed incorrect readings intermittently. Device replaced. Patient monitored manually.
+Eqpt Malfunction 3+Oxygen supply briefly interrupted due to loose connection. Issue resolved within minutes. Patient stable.
+Eqpt Malfunction 4+Infusion pump battery failed unexpectedly. Alarm triggered. Nurse switched to alternate device.
+Eqpt Malfunction 5+Wheelchair brake malfunctioned causing instability. Equipment taken out of service.
+Lab report issue 1+Blood sample mislabeled leading to delayed results. Sample recollected. No impact on treatment.
+Lab report issue 2+Lab results uploaded to wrong patient record. Error identified during review. Corrected immediately.
+Lab report issue 3+Radiology scan delayed due to scheduling conflict. Physician notified. Rescheduled same day.
+Lab report issue 4+Incorrect test ordered for patient. Additional sample required. Delay communicated to care team.
+Communication issue 1+Shift handoff missed key information about medication changes. Error caught during morning review.
+Communication issue 2+Physician order not communicated to nursing staff promptly. Treatment delayed by 1 hour.
+Communication issue 3+Incorrect patient information relayed during verbal report. Clarified before treatment administered.
+Communication issue 4+Discharge instructions not clearly explained. Patient called back with confusion about medications.
+Communication issue 5+Patient discharge delayed due to incomplete paperwork. Family notified. Discharge completed later in day.
+Miscellaneous issue 1+Room cleaning delayed after discharge, causing admission backlog. Issue escalated to housekeeping.
+Miscellaneous issue 2+Patient transported to wrong department due to scheduling error. Redirected without incident.
+Miscellaneous issue 3+Duplicate patient record created in system. Records merged after identification.
+Miscellaneous issue 4+Visitor slipped in hallway due to wet floor. No injuries reported. Warning signs placed.
+Miscellaneous issue 5+Fire alarm triggered accidentally during maintenance work. Evacuation protocol initiated briefly.
