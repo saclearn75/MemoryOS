@@ -1,6 +1,10 @@
 # Temporary testing files 
 temp/
 
+# database files 
+notes_rel.db
+vector_db/
+
 # Docs stores videos, reference files etc that you dont necessary want to upload
 docs/
 
