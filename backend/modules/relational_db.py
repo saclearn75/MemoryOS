@@ -32,8 +32,13 @@ except (ImportError, ModuleNotFoundError):
 import json
 from pathlib import Path
 
-MODULE_DIR = Path(__file__).parent
-REL_DB_NAME = MODULE_DIR / 'notes_rel.db'
+# Define the directory
+DB_DIR = Path(__file__).parent / 'databases'
+
+# This line is the magic: it creates the folder if it doesn't exist
+# parents=True handles nested folders; exist_ok=True prevents errors if it's already there
+DB_DIR.mkdir(parents=True, exist_ok=True)
+REL_DB_NAME = DB_DIR / 'notes_rel.db'
 
 with sqlite3.connect (REL_DB_NAME) as connection:
     cursor = connection.cursor()

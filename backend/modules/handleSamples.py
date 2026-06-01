@@ -21,7 +21,9 @@ except (ImportError, ModuleNotFoundError):
 
 
 notesSamples : List[NoteInternal]= []
-fileName = 'sampletickets.txt'
+
+
+fileName = Path(__file__).parent/'sampletickets.txt'
 
 def createRandomTags():
     '''
@@ -32,10 +34,10 @@ def createRandomTags():
     numTags=random.randint(1,7)
 
     # the if clause takes care of the case if the random function above is changed and 0 is a possibility
-    listOfTags = ["tag " + str(i) for i in range(1,numTags+1)] if numTags else []
+    arrTagNames = [f"tag {i}" for i in range (1,20)]
     
     # the following shuffles in-place. 
-    random.shuffle(listOfTags)
+    listOfTags = random.choices(arrTagNames, k=numTags)
     # print (f'createRandomTags: {numTags=}, {listOfTags=}')
 
     return listOfTags
