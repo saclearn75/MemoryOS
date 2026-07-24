@@ -1,0 +1,10 @@
+services:
+  memoryos:
+    build: ./backend
+    container_name: memoryos
+    environment:
+      - ROOT_PATH=/memoryos
+    ports:
+      - "8001:8000"
+    restart: unless-stopped
+

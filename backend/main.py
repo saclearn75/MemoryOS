@@ -25,7 +25,7 @@ import modules.recommendor as recommendor
 
 origins=origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
 
-app = FastAPI()
+app = FastAPI(root_path=os.getenv("ROOT_PATH",""))
 app.add_middleware(
 	CORSMiddleware,
 	allow_origins=origins,
